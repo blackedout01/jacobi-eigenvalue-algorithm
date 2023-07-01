@@ -178,10 +178,15 @@ static void TestJacobi(double *S, double *Sp, double *UT, double *UTSp, double *
     printf("MaxError(U^T*S'*U - S): %.12f\n", MatrixMaxError(UTSpU, S, N));
 }
 
+static double RandomFloat() {
+    return (double)rand()/((double)rand() + 1.0);
+}
+
 static void TestRandom() {
 #define MaxN (20)
-#define C (MaxN*MaxN)
-    double S[C], G[C], Tmp[C], U[C], UT[C], Sp[C], UTSp[C], UTSpU[C];
+#define M (MaxN*MaxN)
+    double S[M], G[M], Tmp[M], U[M], UT[M], Sp[M], UTSp[M], UTSpU[M];
+#undef M
     
     for(int TestIt = 0; TestIt < 100; ++TestIt) {
         int N = (rand() % (MaxN - 2) + 2);
@@ -190,7 +195,7 @@ static void TestRandom() {
         MatrixSetIdentity(U, N);
         
         for(int I = 0; I < N; ++I) {
-            Sp[I*N + I] = (double)rand()/((double)rand() + 1.0);
+            Sp[I*N + I] = RandomFloat();
         }
         for(int It = 0; It < 100; ++It) {
             int I = rand()%N;
@@ -203,7 +208,7 @@ static void TestRandom() {
                 I = J;
                 J = TmpI;
             }
-            double Angle = (double)rand()/((double)rand() + 1.0);
+            double Angle = RandomFloat();
             MatrixGivens(G, I, J, Angle, N);
             
             //printf("%d, I=%d, J=%d, A=%f", It, I, J, Angle);
@@ -222,6 +227,31 @@ static void TestRandom() {
         
         TestJacobi(S, Sp, UT, UTSp, UTSpU, N);
     }
+#undef MaxN
+}
+
+static void TestRandom2() {
+#define MaxN (20)
+#define M (MaxN*MaxN)
+    double S[M], UT[M], Sp[M], UTSp[M], UTSpU[M];
+#undef M
+    
+    for(int TestIt = 0; TestIt < 100; ++TestIt) {
+        int N = (rand() % (MaxN - 2) + 2);
+        printf("N: %d\n", N);
+        
+        for(int R = 0; R < N; ++R) {
+            for(int C = R + 1; C < N; ++C) {
+                double Value = RandomFloat();
+                S[R*N + C] = Value;
+                S[C*N + R] = Value;
+            }
+            S[R*N + R] = RandomFloat();
+        }
+        
+        TestJacobi(S, Sp, UT, UTSp, UTSpU, N);
+    }
+#undef MaxN
 }
 
 static void TestWikipediaExample() {
@@ -239,6 +269,6 @@ static void TestWikipediaExample() {
 }
 
 int main(void) {
-    TestRandom();
+    TestRandom2();
     return 0;
 }
